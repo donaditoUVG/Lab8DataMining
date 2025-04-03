@@ -8,9 +8,43 @@ output: html_document
 # Introducción
 Hola
 
-## Librerías
+## Conjunto de Datos y Librerías
 ```{r}
 df_test <- read.csv("C:/Users/josep/OneDrive - UVG/SEMESTRE V/Data Mining/LAB09/Lab8DataMining/df_test.csv")
 df_train <- read.csv("C:/Users/josep/OneDrive - UVG/SEMESTRE V/Data Mining/LAB09/Lab8DataMining/df_train.csv")
+
+#librerrrrr
+library(dplyr)
+library(lubridate)
+library(skimr)
+library(ggplot2)
 ```
+
+# Análisis Exploratorio
+
+## ** Estructura de Datos **
+```{r}
+cat("Data de Training\n")
+cat("Dimensiones (filas, columnas):", dim(df_train), "\n")
+print(head(df_train))
+
+cat("Data de Testung\n")
+cat("Dimensiones (filas, columnas):", dim(df_test), "\n")
+print(head(df_test))
+
+```
+
+### Tipos de Datos
+```{r}
+str(df_train)
+# ahora de test
+str(df_test)
+```
+La variable de interés es Power Consumption.
+```{r}
+summary(df_test$power_consumption)
+```
+### Conversión de Datos
+
+Se sugiere convertir la variable date en un objeto de tipo Date.
 
