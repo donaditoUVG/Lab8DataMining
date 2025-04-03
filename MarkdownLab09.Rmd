@@ -1,0 +1,16 @@
+---
+title: "Laboratorio 9"
+author: "José Donado & Luis Mijangos"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+# Introducción
+Hola
+
+## Librerías
+```{r}
+df_test <- read.csv("C:/Users/josep/OneDrive - UVG/SEMESTRE V/Data Mining/LAB09/Lab8DataMining/df_test.csv")
+df_train <- read.csv("C:/Users/josep/OneDrive - UVG/SEMESTRE V/Data Mining/LAB09/Lab8DataMining/df_train.csv")
+```
+
