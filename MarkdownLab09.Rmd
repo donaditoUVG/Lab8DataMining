@@ -1,15 +1,17 @@
 ---
 title: "Laboratorio 9"
-author: "José Donado & Luis Mijangos"
+author: "José Donado & Carlos Aldana"
 date: "`r Sys.Date()`"
 output: html_document
 ---
 
 # Introducción
+
 Hola
 
 ## Conjunto de Datos y Librerías
-```{r}
+
+```{r, warning=FALSE}
 df_test <- read.csv("C:/Users/josep/OneDrive - UVG/SEMESTRE V/Data Mining/LAB09/Lab8DataMining/df_test.csv")
 df_train <- read.csv("C:/Users/josep/OneDrive - UVG/SEMESTRE V/Data Mining/LAB09/Lab8DataMining/df_train.csv")
 
@@ -22,7 +24,8 @@ library(ggplot2)
 
 # Análisis Exploratorio
 
-## ** Estructura de Datos **
+## \*\* Estructura de Datos \*\*
+
 ```{r}
 cat("Data de Training\n")
 cat("Dimensiones (filas, columnas):", dim(df_train), "\n")
@@ -35,16 +38,132 @@ print(head(df_test))
 ```
 
 ### Tipos de Datos
+
 ```{r}
 str(df_train)
+cat("\n")
 # ahora de test
 str(df_test)
 ```
-La variable de interés es Power Consumption.
-```{r}
-summary(df_test$power_consumption)
-```
+
+Ambos conjuntos de datos tienen nueve variables. La variable Date está originalmente considerada como un objeto de tipo character, al igual que day_in_week. Solamente power consumption es de tipo numérica y todas las demás variables son de tipo entero.
+
+El consumo diario de energía es de 1343 kW en promedio, con una desviación estándar de aproximadamente 484.59 kW. A su vez, se evidencia que el 75% de los usuarios de la muestra consumen entre 1103 kW y 1650 kW. La distribución del consumo tiene un sesgo a la derecha (porque la media es menor que la mediana), por lo que la mayoría de clientes consumen menos de 1343 kW por día.
+
+Es atípico observar clientes que consuman menos de 500 o más de 2400 kW.
+
 ### Conversión de Datos
 
 Se sugiere convertir la variable date en un objeto de tipo Date.
 
+```{r}
+#DATE
+df_train <- df_train %>%
+  mutate(date = mdy(date))
+df_test$date <- as.Date(df_test$date, format = "%m/%d/%Y")
+
+#DAY IN WEEK
+
+#se hacen niveles
+day_levels <- c("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+
+df_train$day_in_week <- factor(df_train$day_in_week, levels = day_levels, ordered = TRUE)
+df_test$day_in_week <- factor(df_test$day_in_week, levels = day_levels, ordered = TRUE)
+
+
+```
+
+### Valores Faltantes (NA)
+
+```{r}
+print(colSums(is.na(df_train)))
+print(colSums(is.na(df_test)))
+
+
+```
+
+No hay registros sin información (afortunadamente).
+
+### Análisis de la Variable de Interés: Power Consumption
+
+La variable de interés es Power Consumption.
+
+```{r}
+summary(df_test$power_consumption)
+sd(df_test$power_consumption)
+
+p_hist <- ggplot(df_train, aes(x = power_consumption)) +
+  geom_histogram(binwidth = 100, fill = "steelblue", color = "black") +
+  ggtitle("Distribución del Consumo Diario de Energía (Train)") +
+  xlab("Consumo (kW)") +
+  ylab("Cantidad de Días") +
+  theme_minimal()
+print(p_hist)
+
+p_box <- ggplot(df_train, aes(y = power_consumption)) +
+  geom_boxplot(fill = "lightblue") +
+  ggtitle("Boxplot of Daily Power Consumption (Train)") +
+  ylab("Power Consumption") +
+  theme_minimal() +
+  theme(axis.text.x = element_blank(), axis.ticks.x = element_blank()) # Hide x-axis text
+print(p_box)
+
+```
+
+```{r}
+zero_consumption_train <- sum(df_train$power_consumption == 0)
+zero_consumption_test <- sum(df_test$power_consumption == 0)
+print("Días sin consumo de Electricidad (Train):")
+print(df_train$date[df_train$power_consumption == 0])
+# Find dates with zero consumption in test
+zero_consumption_count <- sum(df_train$power_consumption == 0, na.rm = TRUE)
+print("Días sin consumo de Electricidad  (Test):")
+print(df_test$date[df_test$power_consumption == 0])
+
+
+```
+
+Se ha de notar que en el set de train existen 3 días sin consumo de energía y en el Test se registraron 6 días. En el dataset de Test destaca el hecho de que los días sin consumo de electricidad fueron del 18 al 20 de agosto del 2010 y luego del 26 al 27 de septiembre de ese año.
+
+```{r}
+
+cat("Training: Diferencia de Fechas", range(df_train$date, na.rm = TRUE), "\n")
+cat("Test: Diferencia de Fechas", range(df_test$date, na.rm = TRUE), "\n")
+```
+
+En el training se tiene información de casi 2 años, pero en el test solamente de 9 meses.
+
+### Consumo de Energía a lo largo de distintos Periodos
+
+```{r}
+p_dow <- ggplot(df_train, aes(x = day_in_week, y = power_consumption, fill = day_in_week)) +
+  geom_boxplot() +
+  ggtitle("Consumo de Energía por día de la Semana (Train)") +
+  xlab("Días") +
+  ylab("Power Consumption") +
+  theme_minimal() +
+  theme(legend.position = "none")
+print(p_dow)
+
+# Consumption by Month
+p_month <- ggplot(df_train, aes(x = factor(month), y = power_consumption, fill = factor(month))) +
+  geom_boxplot() +
+  ggtitle("Consumo de Energía por Mes (Train)") +
+  xlab("Meses") +
+  ylab("Power Consumption") +
+  theme_minimal() +
+  theme(legend.position = "none")
+print(p_month)
+
+# Consumption by Year
+p_year <- ggplot(df_train, aes(x = factor(year), y = power_consumption, fill = factor(year))) +
+  geom_boxplot() +
+  ggtitle("Consumo de Energía por Año (Train)") +
+  xlab("Año") +
+  ylab("Power Consumption") +
+  theme_minimal() +
+  theme(legend.position = "none")
+print(p_year)
+
+
+```
